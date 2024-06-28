@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Custom URL Blocker",
+  "description": "Chrome Extension for detecting unwanted websites the user is visiting and blocks them, if they are present in a predefined blocklist.",
+  "version": "1.0",
+  
+  "permissions": [
+    "webRequest",
+    "webRequestBlocking",
+    "storage"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_popup": "index.html"
+  },
+
+  "host_permissions": ["<all_urls>"],
+
+  "icons": {
+      "16": "images/icon-16.png",
+      "32": "images/icon-32.png",
+      "48": "images/icon-48.png",
+      "128": "images/icon-128.png"
+  },
+
+  "short_name": "React App",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
