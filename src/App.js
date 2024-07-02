@@ -1,40 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import { fetchBlocklist, fetchCurrentTabURL, fetchEnableStatus, setEnableStatus } from './utils/chromeAPI';
 
 function App() {
+  // State variables to manage the current URL, base URL, blocklist, enable/disable status, and messages.
   const [currentURL, setCurrentURL] = useState('');
   const [baseURL, setBaseURL] = useState('');
   const [blocklist, setBlocklist] = useState([]);
   const [isEnabled, setIsEnabled] = useState();
   const [message, setMessage] = useState('');
+
+  // Generating the favicon URL based on the current URL using Google Favicon API.
   const FavIcon = `https://www.google.com/s2/favicons?domain=${currentURL}`;
 
+  // useEffect to run on component mount to get the current tab URL and stored settings.
   useEffect(() => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if(tabs[0].url) {
-        const url = new URL(tabs[0].url);
-        setCurrentURL(url.href);
-        setBaseURL(url.origin);
-      }
+    fetchCurrentTabURL((url) => {
+      const urlObject = new URL(url);
+      setCurrentURL(urlObject.href);
+      setBaseURL(urlObject.origin);
     });
 
-    chrome.storage.local.get('url_blocker', (data) => {
-      const app_data = data.url_blocker || {};
-      setBlocklist(app_data.blocklist || []);
+    fetchBlocklist((blocklist) => {
+      setBlocklist(blocklist);
     });
 
-    chrome.storage.local.get('url_blocker_enabled', (data) => {
-      setIsEnabled(data.url_blocker_enabled);
+    fetchEnableStatus((enabled) => {
+      setIsEnabled(enabled);
     });
-
   }, []);
 
+  // useEffect to update storage when user toggle the enable/disable button
   useEffect(() => {
-    chrome.storage.local.set({ url_blocker_enabled : isEnabled }, () => {
-      console.log('Extension ', isEnabled ? 'enabled' : 'disabled');
+    setEnableStatus(isEnabled, () => {
+      console.log(`Extension ${isEnabled ? 'enabled' : 'disabled'}`);
     });
   }, [isEnabled]);
 
+  // Function to refresh the current tab with a delay
   function refreshCurrentTab() {
     setTimeout(() => {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -45,6 +48,7 @@ function App() {
     }, 500);
   }
 
+  // Function to add a URL to the blocklist
   const addURL = (url) => {
     if (url) {
       if(!blocklist.includes(url)) {
@@ -65,6 +69,7 @@ function App() {
     }
   };
 
+  // Function to remove a URL from the blocklist
   const removeURL = (url) => {
     const updatedBlocklist = blocklist.filter((item) => item !== url);
     chrome.storage.local.set({ url_blocker : { blocklist: updatedBlocklist }}, () => {
@@ -75,48 +80,46 @@ function App() {
   };
 
   return (
-    <div className="popup" style={{width: '400px'}}>
+    <div id="popup">
       
-      <div className="header" style={{display: 'flex', background: 'white', justifyContent: 'center', alignItems: 'center'}}>
-        <div className='app_title' style={{fontSize: '19px', fontWeight: '700', padding: '20px 20px'}}>
+      <div id="header">
+        <div id='app_title'>
           URL Blocker
         </div>
-        <button onClick={() => {setIsEnabled(!isEnabled)}} className='app_button' style={{height: 'fit-content', fontSize: '16px', fontWeight: '500', padding: '5px 10px'}}>
+        <button onClick={() => {setIsEnabled(!isEnabled)}} id='app_button'>
           {isEnabled ? 'Disable' : 'Enable'}
         </button>
       </div>
 
-      <div className="site-details" style={{padding: '20px 20px', display: 'flex', background: '#202020', color: 'white'}}>
-        <div className='site-icon' style={{flex: '1 1 0', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-          <img src={FavIcon} style={{width: '16px', height: '16px'}} />
+      <div id="site-details">
+        <div id='site-icon'>
+          <img src={FavIcon} style={{width: '16px', height: '16px'}} 
+          />
         </div>
-        <div className='site-icon' style={{flex: '4 1 0', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', fontSize: '19px', fontWeight: '300'}}>
+        <div id='site-url'>
           {baseURL}
         </div>
       </div>
 
-      <div className="block-options" style={{background: '#202020', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'start', padding: '20px 20px'}}>
-        <button style={{padding: '20px 15px', borderRadius: '20px', background: '#eeeeee', fontSize: '22px', fontWeight: '400', color: '#202020'}} onClick={() => addURL(baseURL)}>Block this website</button>
-        <div id='messageBox' style={{padding: '20px 15px', textAlign: 'center', fontSize: '15px', fontWeight: '300', color: 'white'}}>{message}</div>
-        {/* <input
-          type="text"
-          value={newURL}
-          onChange={(e) => setNewURL(e.target.value)}
-          placeholder="Add a URL to block"
-        />
-        <button onClick={addNewURL}>Add</button> */}
+      <div id="block-options">
+        <button id='block-button' onClick={() => addURL(baseURL)}>Block this website</button>
+        <div id='messageBox'>
+          {message}
+        </div>
       </div>
 
-      <div className='blocklist-display' style={{background: 'white', padding: '20px'}}>
+      <div id='blocklist-display'>
         <h4>Blocked Websites</h4>
         <ul>
           {blocklist.map((url, index) => (
-            <li style={{fontSize: '16px'}} key={index}>
-              {url} <button style={{margin: '5px 15px'}} onClick={() => removeURL(url)}>Remove</button>
+            <li key={index}>
+              {url} 
+              <button onClick={() => removeURL(url)}>Remove</button>
             </li>
           ))}
         </ul>
       </div>
+
     </div>
   );
 }
