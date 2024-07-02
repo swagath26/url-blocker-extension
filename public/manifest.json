@@ -5,9 +5,11 @@
   "version": "1.0",
   
   "permissions": [
-    "webRequest",
-    "webRequestBlocking",
-    "storage"
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess",
+    "storage",
+    "activeTab",
+    "tabs"
   ],
 
   "background": {
@@ -15,21 +17,21 @@
   },
 
   "action": {
-    "default_popup": "index.html"
+    "default_icon": {
+      "16": "icons/logo16.png",
+      "19": "icons/logo19.png",
+      "38": "icons/logo38.png"
+    },
+    "default_popup": "popup.html"
   },
 
   "host_permissions": ["<all_urls>"],
 
   "icons": {
-      "16": "images/icon-16.png",
-      "32": "images/icon-32.png",
-      "48": "images/icon-48.png",
-      "128": "images/icon-128.png"
-  },
-
-  "short_name": "React App",
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+      "16": "icons/logo16.png",
+      "19": "icons/logo19.png",
+      "38": "icons/logo38.png",
+      "48": "icons/logo48.png",
+      "128": "icons/logo128.png"
+  }
 }
